@@ -22,6 +22,8 @@ from PySide6.QtCore import  Signal,  QObject
 # 버튼을 눌렀을 때만 요청하기에 조금 더 직관적임
 # 기존의 숫자값 좀 더 정확히
 
+#mem_wrtie 로 실제 시간 보내는거 추가 T14:15 6bit 보낸단 말야 (14:)15:00으로 출력
+#근데 얘가 뭐 건들게 있었던가
 class SerialWorker(QObject):
     data_received = Signal(str,str)
 
@@ -79,8 +81,8 @@ class SerialWorker(QObject):
 
                 adc_value = data.split()
 
-                if len(adc_value) >1:
-                    adc_value = adc_value[1]    #두번째 부터
+                if len(adc_value) > 300:
+                    adc_value = adc_value[1]    #두번째 부터 그리고 300이하 쓰레기 무시
                     print(f"ADC Value: {adc_value}")
                 else:
                     adc_value = "N/A"
@@ -88,6 +90,22 @@ class SerialWorker(QObject):
 
                 #UI업데이트신호부
                 self.data_received.emit(current_time, adc_value)
+
+                #기존에 re모듈로 데이터 파싱하던거
+
+                # sw_state, adc_value = "N/A", "N/A"
+                # # RE module
+                # match_sw = re.search(r"SW\s(\d+)", data)
+                # match_adc = re.search(r"ADC\s*:\s*(\d+)", data)
+                # if match_sw:
+                #     sw_state = match_sw.group(1)
+                # if match_adc:
+                #     adc_value = match_adc.group(1)
+                #
+                # # 숫자는 encode() 해줘도 되고 문자는 string.encode()해야됨
+                # print(f"SW: {sw_state}, ADC: {adc_value}")
+                #
+
 
 
                 #나중에 버튼 제어 추가
@@ -161,7 +179,7 @@ class TraceBoard(QWidget):
         self.timer = QPushButton('Timer')
         self.timer.clicked.connect(self.on_timer_clicked)
 
-        self.buzzer = QPushButton('Buzzer')
+        self.buzzer = QPushButton('RealTime')
         self.buzzer.clicked.connect(self.on_buzzer_clicked)
 
         self.time = QPushButton('time')
